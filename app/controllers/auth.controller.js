@@ -4,10 +4,10 @@ const crypto = require('crypto')
 
 const config = require('../../config/const')
 const handle = require('../utils/handle')
-const models   = require('../models')
+const User   = require('../models/user')
 const authMailService = require('../services/mailer/auth.mail')
 
-// ## Sign in models.User
+// ## Sign in User
 function signin(req, res, next) {
   const { email, password } = req.body
 
@@ -18,7 +18,7 @@ function signin(req, res, next) {
   }
 
   // Find user on database
-  models.User.findOne({ email: email})
+  User.findOne({ email: email})
   .then((user) => {
 
     // Si aucun utilisateur existe
@@ -54,7 +54,7 @@ function signup(req, res, next) {
   }
 
   // Find user on database
-  models.User.findOne({ email: email})
+  User.findOne({ email: email})
   .then((user) => {
 
     // Si aucun utilisateur existe
@@ -67,9 +67,8 @@ function signup(req, res, next) {
 
         if (hash) {
           // Save user
-          models.User.create({
-            email, firstname, lastname, password: hash
-          })
+          let newUser = new User({firstname, lastname, email, password: hash})
+          newUser.save()
           .then(usr => handle.handleSuccess(res, 'Utilisateur crée avec succès'))
           .catch(err => handle.handleError(res, 'Impossible d\'effectuer la création de compte', err))
           return
@@ -104,8 +103,9 @@ function updatePassword(req, res, next) {
         return false
       }
 
-      // Update entity on database
-      user.update({ password: hash})
+      // Update entity on databas
+      user.password = hash
+      user.save()
         .then((user) => handle.handleSuccess(res, 'Mot de passe modifié avec succès'))
         .catch((err) => handle.handleError(res, 'Les deux mots de passe ne sont pas identiques', err))
   })
@@ -116,7 +116,7 @@ function forgotPassword(req, res, next) {
   const { email } = req.body
 
   // Find user
-  models.User.findOne({ email: email})
+  User.findOne({ email: email})
   .then((user) => {
     // If this user not exist
     if (!user) {
@@ -137,10 +137,9 @@ function forgotPassword(req, res, next) {
       console.log('token_expiration', token_expiration)
 
       // Update user with new token informations
-      user.update({
-        reset_token: token,
-        reset_token_expire: token_expiration
-      })
+      user.reset_token = token
+      user.reset_token_expire = token_expiration
+      user.save()
       .then((user) => {
         // Send email
         authMailService.sendForgotPasswordEmail(req.headers.host, token, user.email, user.firstname, user.lastname)
@@ -170,11 +169,9 @@ function resetPassword(req, res) {
   }
 
   // Check if token are fine and not expired
-  models.User.findOne({
-    where : {
+  User.findOne({
       reset_token: token,
       reset_token_expire: { $gte: new Date() }
-    }
   })
   .then((user) => {
     // Crypt new password
@@ -185,7 +182,8 @@ function resetPassword(req, res) {
         }
 
         // Update entity on database
-        user.update({ password: hash})
+        user.password = hash
+        user.save()
           .then((user) => handle.handleSuccess(res, 'Mot de passe modifié avec succès'))
           .catch((err) => handle.handleError(res, 'Erreur lors de la modification de mot de passe', err))
     })

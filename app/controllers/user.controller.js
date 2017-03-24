@@ -1,9 +1,10 @@
-const models   = require('../models')
+const User   = require('../models/user')
 const handle = require('../utils/handle')
 
 function getProfile(req, res, next) {
   const user = req.user
-  return res.json(user.toJSON())
+  console.log('coucou', user.toJSON())
+  return res.json(user)
 }
 
 function updateProfile(req, res, next) {
@@ -15,7 +16,9 @@ function updateProfile(req, res, next) {
     return false
   }
 
-  user.update({ firstname, lastname })
+  user.firstname = firstname
+  user.lastname = lastname
+  user.save()
     .then((user) => handle.handleSuccess(res, 'Utilisateur mis a jour avec succès', user.toJSON()))
     .catch((err) => handle.handleError(res, 'Impossible de mettre à jour l\'utilisateur', err))
 }

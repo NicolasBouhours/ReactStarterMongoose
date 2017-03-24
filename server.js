@@ -1,16 +1,18 @@
 const compression = require('compression')
 const express = require('express')
 const morgan = require('morgan')
-const sequelize = require('sequelize')
+const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 const helmet = require('helmet')
 const cors = require('cors')
 const join = require('join')
 const bluebird = require('bluebird')
-const User = require('./app/models/user')
 
-const { WEB_PORT, ENV } = require('./config/const')
+const { WEB_PORT, ENV, MONGOOSE } = require('./config/const')
 const routes = require('./app/routes/index.route')
+
+mongoose.Promise = global.Promise;
+mongoose.connect(MONGOOSE)
 
 const app = express()
 

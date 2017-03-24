@@ -1,6 +1,6 @@
 const passport = require('passport')
 const bcrypt = require('bcrypt')
-const User = require('../models').User
+const User = require('../models/user')
 const config = require('../../config/const')
 const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
@@ -16,7 +16,6 @@ const jwtLogin = new JwtStrategy(jwtOptions, (payload, done) => {
   // See if the user ID in the payload exist in the database
   // If it does, call 'done' with that other
   // otherwise, call done with user object
-  console.log('payload new', payload)
   User.findById(payload.data)
     .then((user) => {
       if (!user) {

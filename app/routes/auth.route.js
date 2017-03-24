@@ -6,7 +6,6 @@ const passport = require('passport')
 
 const router = express.Router()
 const requireAuth = passport.authenticate('jwt', { session: false })
-const requireSignin = passport.authenticate('local', { session: false })
 
 // Get API routes
 router.post('/signin', authController.signin)
