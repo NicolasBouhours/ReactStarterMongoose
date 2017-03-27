@@ -134,8 +134,6 @@ function forgotPassword(req, res, next) {
       const token = buffer.toString('hex')
       const token_expiration = Date.now() + config.RESET_PASSWORD_VALIDITY
 
-      console.log('token_expiration', token_expiration)
-
       // Update user with new token informations
       user.reset_token = token
       user.reset_token_expire = token_expiration
@@ -171,7 +169,7 @@ function resetPassword(req, res) {
   // Check if token are fine and not expired
   User.findOne({
       reset_token: token,
-      reset_token_expire: { $gte: new Date() }
+      reset_token_expire: { $gt: new Date() }
   })
   .then((user) => {
     // Crypt new password
